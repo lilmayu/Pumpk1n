@@ -1,6 +1,10 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'java-library'
+    id 'signing'
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 group 'dev.mayuna'
@@ -39,14 +43,99 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
+// == Quick tasks == //
+
+task publishCloseAndRelease() {
+    dependsOn 'publishToSonatype'
+    dependsOn 'closeAndReleaseSonatypeStagingRepository'
+}
+
+shadowJar {
+
+}
+
 test {
     useJUnitPlatform()
 }
 
-shadowJar {
-    archiveName = 'pumpkin.jar'
+// == Maven publishing == //
+
+publishing {
+
+    publications {
+        shadow(MavenPublication) {
+            groupId = 'dev.mayuna'
+            artifactId = 'pumpk1n'
+            version = getVersion()
+            from components.java
+
+            pom {
+                name = 'Pumpk1n'
+                description = 'Lightweight and customizable tool for quick data management using Gson serialization'
+                url = 'https://github.com/lilmayu/Pumpk1n'
+
+                scm {
+                    connection = 'scm:https://github.com/lilmayu/Pumpk1n'
+                    developerConnection = 'scm:git:https://github.com/lilmayu/Pumpk1n.git'
+                    url = 'https://github.com/lilmayu/Pumpk1n'
+                }
+
+                licenses {
+                    license {
+                        name = 'Apache License 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'mayuna'
+                        name = 'Marek Lof'
+                        email = 'uwulilmayu@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+
+    publishing {
+        repositories {
+            maven {
+                credentials {
+                    username = "$ossrhUsername"
+                    password = "$ossrhPassword"
+                }
+
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+        }
+    }
 }
 
-test {
-    useJUnitPlatform();
+signing {
+    sign publishing.publications.shadow
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username = "$ossrhUsername"
+            password = "$ossrhPassword"
+        }
+    }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+shadowJar.dependsOn javadocJar
+shadowJar.dependsOn sourcesJar
+shadowJar.dependsOn jar
+
+components.java.withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+    skip()
 }
