@@ -30,29 +30,6 @@ public class Pumpk1n {
     }
 
     /**
-     * Gets or creates {@link DataHolder} by its id
-     *
-     * @param uuid Non-null {@link UUID}
-     *
-     * @return Non-null {@link DataHolder}
-     */
-    public @NonNull DataHolder getOrCreateDataHolder(@NonNull UUID uuid) {
-        DataHolder dataHolder = getDataHolder(uuid);
-
-        if (dataHolder == null) {
-            dataHolder = storageHandler.loadHolder(uuid);
-
-            if (dataHolder == null) {
-                dataHolder = new DataHolder(this, uuid);
-                dataHolderList.add(dataHolder);
-                storageHandler.saveHolder(dataHolder);
-            }
-        }
-
-        return dataHolder;
-    }
-
-    /**
      * Gets {@link DataHolder} by its id
      *
      * @param uuid Non-null {@link UUID}
@@ -64,17 +41,74 @@ public class Pumpk1n {
     }
 
     /**
-     * Removes {@link DataHolder} from current storage
+     * Gets or loads {@link DataHolder} by its id
+     *
+     * @param uuid Non-null {@link UUID}
+     *
+     * @return Nullable {@link DataHolder}
+     */
+    public DataHolder getOrLoadDataHolder(@NonNull UUID uuid) {
+        DataHolder dataHolder = getDataHolder(uuid);
+
+        if (dataHolder == null) {
+            dataHolder = storageHandler.loadHolder(uuid);
+        }
+
+        return dataHolder;
+    }
+
+    /**
+     * Gets or loads {@link DataHolder} by its id. If it did not load, it creates new {@link DataHolder} and loads it.
+     *
+     * @param uuid Non-null {@link UUID}
+     *
+     * @return Non-null {@link DataHolder}
+     */
+    public @NonNull DataHolder getOrCreateDataHolder(@NonNull UUID uuid) {
+        DataHolder dataHolder = getOrLoadDataHolder(uuid);
+
+        if (dataHolder == null) {
+            dataHolder = new DataHolder(this, uuid);
+            dataHolderList.add(dataHolder);
+        }
+
+        return dataHolder;
+    }
+
+    /**
+     * Adds your {@link DataHolder} into memory if there's no {@link DataHolder} with your {@link DataHolder}'s id
+     * @param dataHolder Non-null {@link DataHolder}
+     */
+    public @NonNull void addToMemoryDataHolder(@NonNull DataHolder dataHolder) {
+        if (getDataHolder(dataHolder.getUuid()) == null) {
+            dataHolderList.add(dataHolder);
+        }
+    }
+
+    /**
+     * Unloads {@link DataHolder} from current storage
+     *
+     * @param uuid Non-null {@link UUID}
+     *
+     * @return True if any {@link DataHolder} was unloaded
+     */
+    public boolean unloadDataHolder(@NonNull UUID uuid) {
+        return dataHolderList.removeIf(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid));
+    }
+
+    /**
+     * Unloads and removes {@link DataHolder} from current storage
      *
      * @param uuid Non-null {@link UUID}
      *
      * @return True if removed, false otherwise
      */
     public boolean deleteDataHolder(@NonNull UUID uuid) {
+        dataHolderList.removeIf(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid));
         return storageHandler.removeHolder(uuid);
     }
 
-    public void save(DataHolder dataHolder) {
+    public void saveDataHolder(DataHolder dataHolder) {
         storageHandler.saveHolder(dataHolder);
     }
 }

@@ -25,7 +25,7 @@ public class Pumpk1nTests {
 
         UUID uuid = UUID.randomUUID();
 
-        DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        DataHolder dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(69, testData.someNumber);
@@ -39,7 +39,7 @@ public class Pumpk1nTests {
         pumpk1n = new Pumpk1n(new FolderStorageHandler("./data/"));
         pumpk1n.prepareStorage();
 
-        dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(newRandomNumber, testData.someNumber);
@@ -54,7 +54,7 @@ public class Pumpk1nTests {
 
         UUID uuid = UUID.randomUUID();
 
-        DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        DataHolder dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(69, testData.someNumber);
@@ -68,7 +68,7 @@ public class Pumpk1nTests {
         pumpk1n = new Pumpk1n(new SQLiteStorageHandler());
         pumpk1n.prepareStorage();
 
-        dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(newRandomNumber, testData.someNumber);
@@ -96,7 +96,7 @@ public class Pumpk1nTests {
 
         UUID uuid = UUID.randomUUID();
 
-        DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        DataHolder dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(69, testData.someNumber);
@@ -110,7 +110,7 @@ public class Pumpk1nTests {
         pumpk1n = new Pumpk1n(new SQLStorageHandler(hikariConfig, "pumpkin"));
         pumpk1n.prepareStorage();
 
-        dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        dataHolder = pumpk1n.getOrLoadDataHolder(uuid);
         testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(newRandomNumber, testData.someNumber);

@@ -24,12 +24,15 @@ public class DataHolder {
     /**
      * It takes a JSON object and converts it into a {@link DataHolder} object
      *
-     * @param pumpk1n The instance of Pumpk1n.
+     * @param pumpk1n    The instance of Pumpk1n.
      * @param jsonObject The JsonObject to load the {@link DataHolder} from.
+     *
      * @return A new {@link DataHolder} object.
      */
     public static @NonNull DataHolder loadFromJsonObject(Pumpk1n pumpk1n, @NonNull JsonObject jsonObject) {
-        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n)).create().fromJson(jsonObject, DataHolder.class);
+        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
+                                .create()
+                                .fromJson(jsonObject, DataHolder.class);
     }
 
     /**
@@ -38,7 +41,10 @@ public class DataHolder {
      * @return A JsonObject
      */
     public @NonNull JsonObject getAsJsonObject() {
-        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n)).create().toJsonTree(this).getAsJsonObject();
+        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
+                                .create()
+                                .toJsonTree(this)
+                                .getAsJsonObject();
     }
 
     /**
@@ -119,16 +125,18 @@ public class DataHolder {
 
     /**
      * Deletes {@link DataHolder}
+     *
+     * @return True if removed, false otherwise
      */
-    public void delete() {
-        pumpk1n.deleteDataHolder(uuid);
+    public boolean delete() {
+        return pumpk1n.deleteDataHolder(uuid);
     }
 
     /**
      * Saves {@link DataHolder}
      */
     public void save() {
-        pumpk1n.save(this);
+        pumpk1n.saveDataHolder(this);
     }
 
     private static class DataHolderTypeAdapter implements JsonSerializer<DataHolder>, JsonDeserializer<DataHolder> {
