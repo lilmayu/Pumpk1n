@@ -49,6 +49,11 @@ dependencies {
 - For version number see latest [Maven Repository](https://mvnrepository.com/artifact/dev.mayuna/pumpk1n) release (should be same with Github Release though)
 - You can also use [GitHub Releases](https://github.com/lilmayu/pumpk1n/releases)
 
+## Requirements
+- Java >= 8
+- [GSON](https://github.com/google/gson) 
+- And possibly other libraries (see Gradle installation)
+
 ## Documentation
 An example is worth a thousand words.
 ```java
