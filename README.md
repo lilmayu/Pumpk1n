@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/github/v/release/lilmayu/Pumpk1n.svg" alt="Version">
 </p>
 <p align="center">
-    Pumpk1n - Lightweight and customizable tool for quick data management using JSON serialization.
+    Pumpk1n - Lightweight and customizable tool for quick data management using Gson serialization.
     <br>
     Made by <a href="https://mayuna.dev">Mayuna</a>
 </p>
