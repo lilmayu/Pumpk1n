@@ -21,6 +21,11 @@
     <artifactId>pumpk1n</artifactId>
     <version>VERSION</version>
 </dependency>
+<dependency>
+    <groupId>dev.mayuna</groupId>
+    <artifactId>mayus-json-utilities</artifactId>
+    <version>1.3.1</version>
+</dependency>
 <!-- + GSON and possibly MySQL with HikaryCP or SQLite -->
 ```
 ### Gradle
@@ -32,6 +37,9 @@ repositories {
 dependencies {
     // Change 'implementation' to 'compile' on old Gradle versions
     implementation 'dev.mayuna:pumpk1n:VERSION'
+    
+    // Mayu's Json Utilities
+    implementation 'dev.mayuna:mayus-json-utilities:1.3.1'
 
     // You will also need...
     implementation 'com.google.code.gson:gson:2.9.0'
@@ -51,6 +59,7 @@ dependencies {
 
 ## Requirements
 - Java >= 8
+- [Mayu's Json Utilities](https://github.com/lilmayu/MayusJsonUtilities)
 - [GSON](https://github.com/google/gson) 
 - And possibly other libraries (see Gradle installation)
 
