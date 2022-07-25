@@ -93,7 +93,7 @@ There are multiple pre-implemented `StorageHandler`s:
 ```java
 // Creating FolderStorageHandler
 
-FolderStorageHandler storageHandler = new FolderStorageHandler("/path/to/folder");
+FolderStorageHandler storageHandler = new FolderStorageHandler("/path/to/folder/");
 ```
 ```java
 // Creating SQLiteStorageHandler
