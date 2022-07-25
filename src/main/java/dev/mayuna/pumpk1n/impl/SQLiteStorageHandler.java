@@ -79,7 +79,7 @@ public class SQLiteStorageHandler extends StorageHandler {
     private Connection connectToDatabase() {
         synchronized (mutex) {
             try {
-                return DriverManager.getConnection("jdbc:sqlite:" + settings.fileName + ".db");
+                return DriverManager.getConnection("jdbc:sqlite:" + settings.fileName);
             } catch (Exception exception) {
                 throw new RuntimeException(new SQLException("Could not create connection to sqlite database!", exception));
             }
