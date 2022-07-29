@@ -30,9 +30,12 @@ public class DataHolder {
      * @return A new {@link DataHolder} object.
      */
     public static @NonNull DataHolder loadFromJsonObject(Pumpk1n pumpk1n, @NonNull JsonObject jsonObject) {
-        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
+        DataHolder dataHolder = new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
                                 .create()
                                 .fromJson(jsonObject, DataHolder.class);
+
+        dataHolder.dataElementMap.values().forEach(DataElement::onLoad);
+        return dataHolder;
     }
 
     /**
@@ -130,6 +133,15 @@ public class DataHolder {
      */
     public boolean delete() {
         return pumpk1n.deleteDataHolder(uuid);
+    }
+
+    /**
+     * Returns all loaded {@link DataElement}s in unmodifiable map
+     *
+     * @return A unmodifiable map of the data elements
+     */
+    public Map<Class<?>, DataElement> getDataElementMap() {
+        return Collections.unmodifiableMap(dataElementMap);
     }
 
     /**

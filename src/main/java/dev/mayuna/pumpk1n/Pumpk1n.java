@@ -1,5 +1,6 @@
 package dev.mayuna.pumpk1n;
 
+import dev.mayuna.pumpk1n.api.DataElement;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
@@ -77,6 +78,7 @@ public class Pumpk1n {
 
     /**
      * Adds your {@link DataHolder} into memory if there's no {@link DataHolder} with your {@link DataHolder}'s id
+     *
      * @param dataHolder Non-null {@link DataHolder}
      */
     public @NonNull void addToMemoryDataHolder(@NonNull DataHolder dataHolder) {
@@ -108,7 +110,21 @@ public class Pumpk1n {
         return storageHandler.removeHolder(uuid);
     }
 
-    public void saveDataHolder(DataHolder dataHolder) {
+    /**
+     * Saves {@link DataHolder}
+     *
+     * @param dataHolder Non-null {@link DataHolder}
+     */
+    public void saveDataHolder(@NonNull DataHolder dataHolder) {
+        dataHolder.getDataElementMap().values().forEach(DataElement::beforeSave);
         storageHandler.saveHolder(dataHolder);
+    }
+
+    /**
+     * Returns unmodifiable list of {@link DataHolder}s
+     * @return Unmodifiable list of {@link DataHolder}
+     */
+    public @NonNull List<DataHolder> getDataHolderList() {
+        return Collections.unmodifiableList(dataHolderList);
     }
 }
