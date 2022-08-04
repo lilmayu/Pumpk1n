@@ -53,6 +53,7 @@ public class Pumpk1n {
 
         if (dataHolder == null) {
             dataHolder = storageHandler.loadHolder(uuid);
+            dataHolderList.add(dataHolder);
         }
 
         return dataHolder;
