@@ -3,6 +3,7 @@ package dev.mayuna.pumpk1n.objects;
 import com.google.gson.*;
 import dev.mayuna.pumpk1n.Pumpk1n;
 import dev.mayuna.pumpk1n.api.DataElement;
+import dev.mayuna.pumpk1n.api.ParentedDataElement;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -34,7 +35,10 @@ public class DataHolder {
                                 .create()
                                 .fromJson(jsonObject, DataHolder.class);
 
-        dataHolder.dataElementMap.values().forEach(DataElement::onLoad);
+        dataHolder.dataElementMap.values().forEach(dataElement -> {
+            setDataHolderParent(dataHolder, dataElement);
+            dataElement.onLoad();
+        });
         return dataHolder;
     }
 
@@ -68,6 +72,8 @@ public class DataHolder {
 
         try {
             dataElement = dataElementClass.getConstructor().newInstance();
+
+            setDataHolderParent(this, dataElement);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Unable to create new instance of DataElement " + dataElementClass.getName() + "!", e);
         } catch (NoSuchMethodException e) {
@@ -149,6 +155,12 @@ public class DataHolder {
      */
     public void save() {
         pumpk1n.saveDataHolder(this);
+    }
+
+    private static void setDataHolderParent(DataHolder dataHolder, DataElement dataElement) {
+        if (dataElement instanceof ParentedDataElement) {
+            ((ParentedDataElement) dataElement).setDataHolderParent(dataHolder);
+        }
     }
 
     private static class DataHolderTypeAdapter implements JsonSerializer<DataHolder>, JsonDeserializer<DataHolder> {

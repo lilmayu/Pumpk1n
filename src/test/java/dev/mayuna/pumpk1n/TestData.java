@@ -1,9 +1,9 @@
 package dev.mayuna.pumpk1n;
 
 import com.google.gson.GsonBuilder;
-import dev.mayuna.pumpk1n.api.DataElement;
+import dev.mayuna.pumpk1n.api.ParentedDataElement;
 
-public class TestData implements DataElement {
+public class TestData extends ParentedDataElement {
 
     public int someNumber = 69;
 

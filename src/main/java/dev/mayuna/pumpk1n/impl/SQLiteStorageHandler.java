@@ -6,7 +6,6 @@ import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.io.File;
 import java.sql.*;
 import java.util.UUID;
 
@@ -15,9 +14,8 @@ import java.util.UUID;
  */
 public class SQLiteStorageHandler extends StorageHandler {
 
-    private final @Getter Settings settings;
-
     private static final Object mutex = new Object();
+    private final @Getter Settings settings;
 
     /**
      * Creates SQLite Storage Handler with default settings
@@ -79,7 +77,13 @@ public class SQLiteStorageHandler extends StorageHandler {
     private Connection connectToDatabase() {
         synchronized (mutex) {
             try {
-                return DriverManager.getConnection("jdbc:sqlite:" + settings.fileName);
+                String jdbcUrl = settings.customJDBCUrl;
+
+                if (jdbcUrl == null) {
+                    jdbcUrl = "jdbc:sqlite:" + settings.fileName;
+                }
+
+                return DriverManager.getConnection(jdbcUrl);
             } catch (Exception exception) {
                 throw new RuntimeException(new SQLException("Could not create connection to sqlite database!", exception));
             }
@@ -160,31 +164,38 @@ public class SQLiteStorageHandler extends StorageHandler {
 
     public static class Settings {
 
+        private final @Getter String customJDBCUrl;
         private final @Getter String fileName;
         private final @Getter String tableName;
 
         /**
          * Creates {@link Settings} object. It's recommended that you use {@link Builder} to create it.
-         * @param fileName Non-null file name, must not include directories
-         * @param tableName Non-null database name that will Pumpk1n use
+         *
+         * @param customJDBCUrl Custom JDBC URL to use. If this argument is not null, fileName can be null.
+         * @param fileName      Partially non-null file name, must not include directories
+         * @param tableName     Non-null database name that will Pumpk1n use
          */
-        public Settings(@NonNull String fileName, @NonNull String tableName) {
-            if (fileName.contains(File.pathSeparator)) {
-                throw new IllegalArgumentException("FileName " + fileName + " contains path separator!");
+        public Settings(String customJDBCUrl, String fileName, @NonNull String tableName) {
+            if (customJDBCUrl == null) {
+                if (fileName == null) {
+                    throw new IllegalArgumentException("fileName is null! (customJDBCUrl is also null)");
+                }
             }
 
             if (tableName.contains(";")) {
                 throw new IllegalArgumentException("TableName " + tableName + " contains semicolon!");
             }
 
+            this.customJDBCUrl = customJDBCUrl;
             this.fileName = fileName;
             this.tableName = tableName;
         }
 
         public static class Builder {
 
-            private @Getter String fileName = "pumpkin_database";
+            private @Getter String fileName = "pumpkin_database.db";
             private @Getter String tableName = "pumpkin";
+            private @Getter String customJDBCUrl = null;
 
             /**
              * Creates empty {@link Builder} with default values
@@ -207,15 +218,17 @@ public class SQLiteStorageHandler extends StorageHandler {
              * @return Non-null {@link Settings}
              */
             public @NonNull Settings build() {
-                if (fileName == null) {
-                    throw new IllegalArgumentException("File name was not set.");
+                if (customJDBCUrl == null) {
+                    if (fileName == null) {
+                        throw new IllegalArgumentException("File name was not set. (customJDBCUrl is null)");
+                    }
                 }
 
                 if (tableName == null) {
                     throw new IllegalArgumentException("Database name was not set.");
                 }
 
-                return new Settings(fileName, tableName);
+                return new Settings(customJDBCUrl, fileName, tableName);
             }
 
             /**
@@ -239,6 +252,18 @@ public class SQLiteStorageHandler extends StorageHandler {
              */
             public @NonNull Builder setTableName(@NonNull String tableName) {
                 this.tableName = tableName;
+                return this;
+            }
+
+            /**
+             * Sets custom JDBC url to use
+             *
+             * @param customJDBCUrl Non-null {@link String}
+             *
+             * @return {@link Builder}, useful for chaining
+             */
+            public @NonNull Builder setCustomJDBCUrl(String customJDBCUrl) {
+                this.customJDBCUrl = customJDBCUrl;
                 return this;
             }
         }

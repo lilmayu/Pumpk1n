@@ -13,8 +13,7 @@ import java.sql.SQLException;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Pumpk1nTests {
 
@@ -33,7 +32,8 @@ public class Pumpk1nTests {
         int newRandomNumber = new Random().nextInt();
         testData.someNumber = newRandomNumber;
 
-        dataHolder.save();
+        assertNotNull(testData.getDataHolderParent());
+        testData.getDataHolderParent().save();
 
         // New instance ->
         pumpk1n = new Pumpk1n(new FolderStorageHandler("./data/"));
@@ -49,7 +49,7 @@ public class Pumpk1nTests {
 
     @Test
     public void testSQLiteStorageHandler() {
-        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler());
+        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
         pumpk1n.prepareStorage();
 
         UUID uuid = UUID.randomUUID();
@@ -62,10 +62,11 @@ public class Pumpk1nTests {
         int newRandomNumber = new Random().nextInt();
         testData.someNumber = newRandomNumber;
 
-        dataHolder.save();
+        assertNotNull(testData.getDataHolderParent());
+        testData.getDataHolderParent().save();
 
         // New instance ->
-        pumpk1n = new Pumpk1n(new SQLiteStorageHandler());
+        pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
         pumpk1n.prepareStorage();
 
         dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
@@ -77,7 +78,7 @@ public class Pumpk1nTests {
 
         assertNull(pumpk1n.getDataHolder(dataHolder.getUuid()));
 
-        new File(((SQLiteStorageHandler) pumpk1n.getStorageHandler()).getSettings().getFileName() + ".db").delete();
+        //new File(((SQLiteStorageHandler) pumpk1n.getStorageHandler()).getSettings().getFileName() + ".db").delete();
     }
 
     //@Test
