@@ -38,7 +38,20 @@ public class Pumpk1n {
      * @return Nullable {@link DataHolder}
      */
     public DataHolder getDataHolder(@NonNull UUID uuid) {
-        return dataHolderList.stream().filter(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid)).findFirst().orElse(null);
+        synchronized (dataHolderList) {
+            for (DataHolder dataHolder : dataHolderList) {
+                if (dataHolder != null) {
+                    UUID dataHolderUUID = dataHolder.getUuid();
+                    if (dataHolderUUID != null) {
+                        if (dataHolderUUID.equals(uuid)) {
+                            return dataHolder;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -123,6 +136,7 @@ public class Pumpk1n {
 
     /**
      * Returns unmodifiable list of {@link DataHolder}s
+     *
      * @return Unmodifiable list of {@link DataHolder}
      */
     public @NonNull List<DataHolder> getDataHolderList() {
