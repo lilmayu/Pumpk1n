@@ -1,6 +1,7 @@
 package dev.mayuna.pumpk1n;
 
 import com.zaxxer.hikari.HikariConfig;
+import dev.mayuna.pumpk1n.impl.BufferedFolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.FolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.SQLStorageHandler;
 import dev.mayuna.pumpk1n.impl.SQLiteStorageHandler;
@@ -45,6 +46,37 @@ public class Pumpk1nTests {
 
         dataHolder.delete();
     }
+
+    @Test
+    public void testBufferedFolderStorageHandler() {
+        Pumpk1n pumpk1n = new Pumpk1n(new BufferedFolderStorageHandler("./data/", 3));
+        pumpk1n.prepareStorage();
+
+        UUID uuid = UUID.randomUUID();
+
+        DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
+
+        assertEquals(69, testData.someNumber);
+
+        int newRandomNumber = new Random().nextInt();
+        testData.someNumber = newRandomNumber;
+
+        assertNotNull(testData.getDataHolderParent());
+        testData.getDataHolderParent().save();
+
+        // New instance ->
+        pumpk1n = new Pumpk1n(new BufferedFolderStorageHandler("./data/", 3));
+        pumpk1n.prepareStorage();
+
+        dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        testData = dataHolder.getOrCreateDataElement(TestData.class);
+
+        assertEquals(newRandomNumber, testData.someNumber);
+
+        //dataHolder.delete();
+    }
+
 
     @Test
     public void testSQLiteStorageHandler() {
