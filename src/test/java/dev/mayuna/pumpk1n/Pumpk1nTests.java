@@ -74,7 +74,7 @@ public class Pumpk1nTests {
 
         assertEquals(newRandomNumber, testData.someNumber);
 
-        //dataHolder.delete();
+        dataHolder.delete();
     }
 
 
