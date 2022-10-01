@@ -14,7 +14,6 @@ import java.util.UUID;
 public class Pumpk1n {
 
     private final List<DataHolder> dataHolderList = Collections.synchronizedList(new LinkedList<>());
-    private final @Getter Pumpk1nClassHelper classHelper = new Pumpk1nClassHelper();
     private @Getter StorageHandler storageHandler; // not final tho
 
     public Pumpk1n(StorageHandler storageHandler) {

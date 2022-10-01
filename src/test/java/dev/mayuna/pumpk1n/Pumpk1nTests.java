@@ -7,7 +7,6 @@ import dev.mayuna.pumpk1n.impl.SQLiteStorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Random;
@@ -49,7 +48,9 @@ public class Pumpk1nTests {
 
     @Test
     public void testSQLiteStorageHandler() {
-        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
+        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
+                                                                                                    .setCustomJDBCUrl("jdbc:sqlite:./test/database.db")
+                                                                                                    .build()));
         pumpk1n.prepareStorage();
 
         UUID uuid = UUID.randomUUID();
@@ -66,7 +67,9 @@ public class Pumpk1nTests {
         testData.getDataHolderParent().save();
 
         // New instance ->
-        pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
+        pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
+                                                                                            .setCustomJDBCUrl("jdbc:sqlite:./test/database.db")
+                                                                                            .build()));
         pumpk1n.prepareStorage();
 
         dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
@@ -121,7 +124,7 @@ public class Pumpk1nTests {
         assertNull(pumpk1n.getDataHolder(dataHolder.getUuid()));
 
         try {
-            Connection connection = ((SQLStorageHandler)pumpk1n.getStorageHandler()).getPoolManager().getConnection();
+            Connection connection = ((SQLStorageHandler) pumpk1n.getStorageHandler()).getPoolManager().getConnection();
 
             connection.prepareStatement("DROP TABLE pumpkin").executeUpdate();
 
