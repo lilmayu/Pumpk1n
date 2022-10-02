@@ -2,6 +2,7 @@ package dev.mayuna.pumpk1n.objects;
 
 import com.google.gson.*;
 import dev.mayuna.pumpk1n.Pumpk1n;
+import dev.mayuna.pumpk1n.api.BackwardsCompatible;
 import dev.mayuna.pumpk1n.api.DataElement;
 import dev.mayuna.pumpk1n.api.ParentedDataElement;
 import lombok.Getter;
@@ -108,7 +109,28 @@ public class DataHolder {
 
         synchronized (safeDataElementMap) {
             for (Map.Entry<String, JsonObject> entry : safeDataElementMap.entrySet()) {
-                if (entry.getKey().equals(dataElementClass.getName())) {
+                String className = entry.getKey();
+
+                boolean matches = className.equals(dataElementClass.getName());
+
+                if (!matches) {
+                    if (dataElementClass.isAnnotationPresent(BackwardsCompatible.class)) {
+                        BackwardsCompatible backwardsCompatible = dataElementClass.getAnnotation(BackwardsCompatible.class);
+
+                        if (className.equals(backwardsCompatible.className())) {
+                            matches = true;
+                        } else {
+                            for (String anotherClassName : backwardsCompatible.classNames()) {
+                                if (className.equals(anotherClassName)) {
+                                    matches = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (matches) {
                     T data = createInstance(dataElementClass, entry.getValue());
                     dataElementMap.put(dataElementClass, data);
                     return data;
