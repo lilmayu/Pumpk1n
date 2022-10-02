@@ -160,6 +160,28 @@ public class DataHolder {
     }
 
     /**
+     * Adds or replaces existing {@link DataElement}
+     * @param dataElement Non-null {@link DataElement}
+     */
+    public void addOrReplaceDataElement(@NonNull DataElement dataElement) {
+        synchronized (dataElementMap) {
+            Iterator<Map.Entry<Class<?>, DataElement>> iterator = dataElementMap.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Map.Entry<Class<?>, DataElement> entry = iterator.next();
+
+                if (entry.getKey().getName().equals(dataElement.getClass().getName())) {
+                    iterator.remove();
+                    break;
+                }
+
+            }
+        }
+
+        dataElementMap.put(dataElement.getClass(), dataElement);
+    }
+
+    /**
      * Deletes {@link DataHolder}
      *
      * @return True if removed, false otherwise
