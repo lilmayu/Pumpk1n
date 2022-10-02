@@ -25,22 +25,22 @@ public class Pumpk1nTests {
         UUID uuid = UUID.randomUUID();
 
         DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
-        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
+        AnotherTestData anotherTestData = dataHolder.getOrCreateDataElement(AnotherTestData.class);
 
-        assertEquals(69, testData.someNumber);
+        assertEquals(70, anotherTestData.someNumber);
 
         int newRandomNumber = new Random().nextInt();
-        testData.someNumber = newRandomNumber;
+        anotherTestData.someNumber = newRandomNumber;
 
-        assertNotNull(testData.getDataHolderParent());
-        testData.getDataHolderParent().save();
+        assertNotNull(anotherTestData.getDataHolderParent());
+        anotherTestData.getDataHolderParent().save();
 
         // New instance ->
         pumpk1n = new Pumpk1n(new FolderStorageHandler("./data/"));
         pumpk1n.prepareStorage();
 
         dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
-        testData = dataHolder.getOrCreateDataElement(TestData.class);
+        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(newRandomNumber, testData.someNumber);
 
