@@ -1,13 +1,13 @@
 package dev.mayuna.pumpk1n;
 
 import com.zaxxer.hikari.HikariConfig;
+import dev.mayuna.pumpk1n.impl.BufferedFolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.FolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.SQLStorageHandler;
 import dev.mayuna.pumpk1n.impl.SQLiteStorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Random;
@@ -25,22 +25,22 @@ public class Pumpk1nTests {
         UUID uuid = UUID.randomUUID();
 
         DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
-        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
+        AnotherTestData anotherTestData = dataHolder.getOrCreateDataElement(AnotherTestData.class);
 
-        assertEquals(69, testData.someNumber);
+        assertEquals(70, anotherTestData.someNumber);
 
         int newRandomNumber = new Random().nextInt();
-        testData.someNumber = newRandomNumber;
+        anotherTestData.someNumber = newRandomNumber;
 
-        assertNotNull(testData.getDataHolderParent());
-        testData.getDataHolderParent().save();
+        assertNotNull(anotherTestData.getDataHolderParent());
+        anotherTestData.getDataHolderParent().save();
 
         // New instance ->
         pumpk1n = new Pumpk1n(new FolderStorageHandler("./data/"));
         pumpk1n.prepareStorage();
 
         dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
-        testData = dataHolder.getOrCreateDataElement(TestData.class);
+        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
 
         assertEquals(newRandomNumber, testData.someNumber);
 
@@ -48,8 +48,8 @@ public class Pumpk1nTests {
     }
 
     @Test
-    public void testSQLiteStorageHandler() {
-        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
+    public void testBufferedFolderStorageHandler() {
+        Pumpk1n pumpk1n = new Pumpk1n(new BufferedFolderStorageHandler("./data/", 3));
         pumpk1n.prepareStorage();
 
         UUID uuid = UUID.randomUUID();
@@ -66,7 +66,42 @@ public class Pumpk1nTests {
         testData.getDataHolderParent().save();
 
         // New instance ->
-        pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create().setCustomJDBCUrl("jdbc:sqlite:./test/database.db").build()));
+        pumpk1n = new Pumpk1n(new BufferedFolderStorageHandler("./data/", 3));
+        pumpk1n.prepareStorage();
+
+        dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        testData = dataHolder.getOrCreateDataElement(TestData.class);
+
+        assertEquals(newRandomNumber, testData.someNumber);
+
+        dataHolder.delete();
+    }
+
+
+    @Test
+    public void testSQLiteStorageHandler() {
+        Pumpk1n pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
+                                                                                                    .setCustomJDBCUrl("jdbc:sqlite:./test/database.db")
+                                                                                                    .build()));
+        pumpk1n.prepareStorage();
+
+        UUID uuid = UUID.randomUUID();
+
+        DataHolder dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
+        TestData testData = dataHolder.getOrCreateDataElement(TestData.class);
+
+        assertEquals(69, testData.someNumber);
+
+        int newRandomNumber = new Random().nextInt();
+        testData.someNumber = newRandomNumber;
+
+        assertNotNull(testData.getDataHolderParent());
+        testData.getDataHolderParent().save();
+
+        // New instance ->
+        pumpk1n = new Pumpk1n(new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
+                                                                                            .setCustomJDBCUrl("jdbc:sqlite:./test/database.db")
+                                                                                            .build()));
         pumpk1n.prepareStorage();
 
         dataHolder = pumpk1n.getOrCreateDataHolder(uuid);
@@ -121,7 +156,7 @@ public class Pumpk1nTests {
         assertNull(pumpk1n.getDataHolder(dataHolder.getUuid()));
 
         try {
-            Connection connection = ((SQLStorageHandler)pumpk1n.getStorageHandler()).getPoolManager().getConnection();
+            Connection connection = ((SQLStorageHandler) pumpk1n.getStorageHandler()).getPoolManager().getConnection();
 
             connection.prepareStatement("DROP TABLE pumpkin").executeUpdate();
 

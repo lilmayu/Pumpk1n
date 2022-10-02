@@ -2,6 +2,7 @@ package dev.mayuna.pumpk1n.objects;
 
 import com.google.gson.*;
 import dev.mayuna.pumpk1n.Pumpk1n;
+import dev.mayuna.pumpk1n.api.BackwardsCompatible;
 import dev.mayuna.pumpk1n.api.DataElement;
 import dev.mayuna.pumpk1n.api.ParentedDataElement;
 import lombok.Getter;
@@ -15,7 +16,9 @@ public class DataHolder {
 
     private final @Getter UUID uuid;
     private final @Getter Pumpk1n pumpk1n;
+
     private final Map<Class<?>, DataElement> dataElementMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, JsonObject> safeDataElementMap = Collections.synchronizedMap(new HashMap<>());
 
     public DataHolder(Pumpk1n pumpk1n, UUID uuid) {
         this.pumpk1n = pumpk1n;
@@ -31,15 +34,15 @@ public class DataHolder {
      * @return A new {@link DataHolder} object.
      */
     public static @NonNull DataHolder loadFromJsonObject(Pumpk1n pumpk1n, @NonNull JsonObject jsonObject) {
-        DataHolder dataHolder = new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
+        return new GsonBuilder().registerTypeAdapter(DataHolder.class, new DataHolderTypeAdapter(pumpk1n))
                                 .create()
                                 .fromJson(jsonObject, DataHolder.class);
+    }
 
-        dataHolder.dataElementMap.values().forEach(dataElement -> {
-            setDataHolderParent(dataHolder, dataElement);
-            dataElement.onLoad();
-        });
-        return dataHolder;
+    private static void setDataHolderParent(DataHolder dataHolder, DataElement dataElement) {
+        if (dataElement instanceof ParentedDataElement) {
+            ((ParentedDataElement) dataElement).setDataHolderParent(dataHolder);
+        }
     }
 
     /**
@@ -104,6 +107,37 @@ public class DataHolder {
             }
         }
 
+        synchronized (safeDataElementMap) {
+            for (Map.Entry<String, JsonObject> entry : safeDataElementMap.entrySet()) {
+                String className = entry.getKey();
+
+                boolean matches = className.equals(dataElementClass.getName());
+
+                if (!matches) {
+                    if (dataElementClass.isAnnotationPresent(BackwardsCompatible.class)) {
+                        BackwardsCompatible backwardsCompatible = dataElementClass.getAnnotation(BackwardsCompatible.class);
+
+                        if (className.equals(backwardsCompatible.className())) {
+                            matches = true;
+                        } else {
+                            for (String anotherClassName : backwardsCompatible.classNames()) {
+                                if (className.equals(anotherClassName)) {
+                                    matches = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (matches) {
+                    T data = createInstance(dataElementClass, entry.getValue());
+                    dataElementMap.put(dataElementClass, data);
+                    return data;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -116,6 +150,8 @@ public class DataHolder {
      * @return Returns true, if any {@link DataElement} was removed, otherwise false
      */
     public <T extends DataElement> boolean removeDataElement(@NonNull Class<T> dataElementClass) {
+        boolean success = false;
+
         synchronized (dataElementMap) {
             Iterator<Map.Entry<Class<?>, DataElement>> iterator = dataElementMap.entrySet().iterator();
 
@@ -124,12 +160,47 @@ public class DataHolder {
 
                 if (entry.getKey().equals(dataElementClass)) {
                     iterator.remove();
-                    return true;
+                    success = true;
                 }
             }
         }
 
-        return false;
+        synchronized (safeDataElementMap) {
+            Iterator<Map.Entry<String, JsonObject>> iterator = safeDataElementMap.entrySet().iterator();
+
+            while(iterator.hasNext()) {
+                Map.Entry<String, JsonObject> entry = iterator.next();
+
+                if (entry.getKey().equals(dataElementClass.getName())) {
+                    iterator.remove();
+                    success = true;
+                }
+            }
+        }
+
+        return success;
+    }
+
+    /**
+     * Adds or replaces existing {@link DataElement}
+     * @param dataElement Non-null {@link DataElement}
+     */
+    public void addOrReplaceDataElement(@NonNull DataElement dataElement) {
+        synchronized (dataElementMap) {
+            Iterator<Map.Entry<Class<?>, DataElement>> iterator = dataElementMap.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Map.Entry<Class<?>, DataElement> entry = iterator.next();
+
+                if (entry.getKey().getName().equals(dataElement.getClass().getName())) {
+                    iterator.remove();
+                    break;
+                }
+
+            }
+        }
+
+        dataElementMap.put(dataElement.getClass(), dataElement);
     }
 
     /**
@@ -157,10 +228,37 @@ public class DataHolder {
         pumpk1n.saveDataHolder(this);
     }
 
-    private static void setDataHolderParent(DataHolder dataHolder, DataElement dataElement) {
-        if (dataElement instanceof ParentedDataElement) {
-            ((ParentedDataElement) dataElement).setDataHolderParent(dataHolder);
+    private Map<String, JsonObject> getAllDataIntoSafeMap() {
+        Map<String, JsonObject> safeDataMap = new HashMap<>();
+
+        dataElementMap.forEach((clazz, dataElement) -> {
+            safeDataMap.put(clazz.getName(), dataElement.getGsonBuilder().create().toJsonTree(dataElement).getAsJsonObject());
+        });
+
+        safeDataElementMap.forEach((className, jsonData) -> {
+            if (!safeDataMap.containsKey(className)) {
+                safeDataMap.put(className, jsonData);
+            }
+        });
+
+        return safeDataMap;
+    }
+
+    private <T extends DataElement> T createInstance(Class<T> clazz, JsonObject jsonData) {
+        GsonBuilder gsonBuilder;
+
+        try {
+            gsonBuilder = clazz.getConstructor().newInstance().getGsonBuilder();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException("Unable to create new instance of class " + clazz.getName() + "!", e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Missing public no-args constructor within class " + clazz.getName() + "!", e);
         }
+
+        T dataElement = gsonBuilder.create().fromJson(jsonData, clazz);
+        setDataHolderParent(this, dataElement);
+        dataElement.onLoad();
+        return dataElement;
     }
 
     private static class DataHolderTypeAdapter implements JsonSerializer<DataHolder>, JsonDeserializer<DataHolder> {
@@ -179,26 +277,11 @@ public class DataHolder {
             JsonArray jsonArray = jsonObject.getAsJsonArray("dataMap");
             for (JsonElement jsonElement : jsonArray) {
                 JsonObject mapEntryJsonObject = jsonElement.getAsJsonObject();
-                String clazzToLoad = mapEntryJsonObject.get("class").getAsString();
 
-                Class<?> clazz = pumpk1n.getClassHelper().getClass(clazzToLoad);
+                String className = mapEntryJsonObject.get("class").getAsString();
+                JsonObject jsonData = mapEntryJsonObject.get("data").getAsJsonObject();
 
-                if (clazz == null) {
-                    throw new RuntimeException("Could not find class named " + clazzToLoad + "!");
-                }
-
-                GsonBuilder gsonBuilder;
-
-                try {
-                    gsonBuilder = ((DataElement) clazz.getConstructor().newInstance()).getGsonBuilder();
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("Unable to create new instance of class " + clazzToLoad + "!", e);
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException("Missing public no-args constructor within class " + clazzToLoad + "!", e);
-                }
-
-                DataElement dataElement = (DataElement) gsonBuilder.create().fromJson(mapEntryJsonObject.get("data").getAsJsonObject(), clazz);
-                dataHolder.dataElementMap.put(clazz, dataElement);
+                dataHolder.safeDataElementMap.put(className, jsonData);
             }
 
             return dataHolder;
@@ -210,22 +293,11 @@ public class DataHolder {
             jsonObject.addProperty("uuid", src.uuid.toString());
 
             JsonArray jsonArray = new JsonArray();
-            for (Map.Entry<Class<?>, DataElement> entry : src.dataElementMap.entrySet()) {
-                Class<?> clazz = entry.getKey();
-                GsonBuilder gsonBuilder;
-
-                try {
-                    gsonBuilder = ((DataElement) clazz.getConstructor().newInstance()).getGsonBuilder();
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("Unable to create new instance of class " + clazz.getName() + "!", e);
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException("Missing public no-args constructor within class " + clazz.getName() + "!", e);
-                }
-
+            for (Map.Entry<String, JsonObject> entry : src.getAllDataIntoSafeMap().entrySet()) {
                 JsonObject entryJsonObject = new JsonObject();
 
-                entryJsonObject.addProperty("class", entry.getKey().getName());
-                entryJsonObject.add("data", gsonBuilder.create().toJsonTree(entry.getValue()));
+                entryJsonObject.addProperty("class", entry.getKey());
+                entryJsonObject.add("data", entry.getValue());
 
                 jsonArray.add(entryJsonObject);
 

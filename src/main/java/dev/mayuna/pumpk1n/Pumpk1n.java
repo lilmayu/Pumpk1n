@@ -3,8 +3,11 @@ package dev.mayuna.pumpk1n;
 import dev.mayuna.pumpk1n.api.DataElement;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
+import dev.mayuna.pumpk1n.util.Pumpk1nLogging;
 import lombok.Getter;
 import lombok.NonNull;
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -14,8 +17,8 @@ import java.util.UUID;
 public class Pumpk1n {
 
     private final List<DataHolder> dataHolderList = Collections.synchronizedList(new LinkedList<>());
-    private final @Getter Pumpk1nClassHelper classHelper = new Pumpk1nClassHelper();
     private @Getter StorageHandler storageHandler; // not final tho
+    private @Getter Pumpk1nLogging logging = new Pumpk1nLogging(null, -1);
 
     public Pumpk1n(StorageHandler storageHandler) {
         this.storageHandler = storageHandler;
@@ -24,10 +27,35 @@ public class Pumpk1n {
     }
 
     /**
+     * Enables SLF4J logging with default DEBUG level
+     */
+    public void enableLogging() {
+        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), Level.DEBUG.toInt());
+    }
+
+    /**
+     * Enables SLF4J logging with specified level
+     * @param level Non-null logging level
+     */
+    public void enableLogging(Level level) {
+        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), level.toInt());
+    }
+
+    /**
+     * Enables SLF4J logging with specified level
+     * @param level Non-null logging level
+     */
+    public void enableLogging(int level) {
+        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), level);
+    }
+
+    /**
      * Calls current {@link StorageHandler#prepareStorage()}
      */
     public void prepareStorage() {
+        logging.log("Preparing storage...");
         storageHandler.prepareStorage();
+        logging.log("Storage has been prepared");
     }
 
     /**
@@ -66,7 +94,11 @@ public class Pumpk1n {
 
         if (dataHolder == null) {
             dataHolder = storageHandler.loadHolder(uuid);
-            dataHolderList.add(dataHolder);
+
+            if (dataHolder != null) {
+                logging.log("DataHolder with UUID " + uuid + " has been loaded");
+                dataHolderList.add(dataHolder);
+            }
         }
 
         return dataHolder;
@@ -83,8 +115,10 @@ public class Pumpk1n {
         DataHolder dataHolder = getOrLoadDataHolder(uuid);
 
         if (dataHolder == null) {
+            logging.log("Creating DataHolder with UUID " + uuid + "...");
             dataHolder = new DataHolder(this, uuid);
             dataHolderList.add(dataHolder);
+            logging.log("DataHolder with UUID " + uuid + " has been created");
         }
 
         return dataHolder;
@@ -95,10 +129,26 @@ public class Pumpk1n {
      *
      * @param dataHolder Non-null {@link DataHolder}
      */
-    public @NonNull void addToMemoryDataHolder(@NonNull DataHolder dataHolder) {
+    public void addToMemoryDataHolder(@NonNull DataHolder dataHolder) {
         if (getDataHolder(dataHolder.getUuid()) == null) {
             dataHolderList.add(dataHolder);
         }
+    }
+
+    /**
+     * Replaces {@link DataHolder} in memory if there's {@link DataHolder} with your {@link DataHolder}'s id, if not, it simply adds specified
+     * {@link DataHolder} into memory
+     *
+     * @param dataHolder Non-null {@link DataHolder}
+     */
+    public void addOrReplaceDataHolder(@NonNull DataHolder dataHolder) {
+        DataHolder anotherDataHolder = getDataHolder(dataHolder.getUuid());
+
+        if (anotherDataHolder != null) {
+            dataHolderList.remove(anotherDataHolder);
+        }
+
+        dataHolderList.add(dataHolder);
     }
 
     /**
@@ -120,7 +170,7 @@ public class Pumpk1n {
      * @return True if removed, false otherwise
      */
     public boolean deleteDataHolder(@NonNull UUID uuid) {
-        dataHolderList.removeIf(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid));
+        unloadDataHolder(uuid);
         return storageHandler.removeHolder(uuid);
     }
 
@@ -130,8 +180,10 @@ public class Pumpk1n {
      * @param dataHolder Non-null {@link DataHolder}
      */
     public void saveDataHolder(@NonNull DataHolder dataHolder) {
+        logging.log("Saving DataHolder with UUID " + dataHolder.getUuid() + "...");
         dataHolder.getDataElementMap().values().forEach(DataElement::beforeSave);
         storageHandler.saveHolder(dataHolder);
+        logging.log("DataHolder with UUID " + dataHolder.getUuid() + " has been saved");
     }
 
     /**
