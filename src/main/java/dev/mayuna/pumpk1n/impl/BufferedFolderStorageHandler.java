@@ -55,7 +55,7 @@ public class BufferedFolderStorageHandler extends StorageHandler {
     @Override
     public DataHolder loadHolder(@NonNull UUID uuid) {
         JsonObject jsonObject = null;
-        IOException lastException = null;
+        Exception lastException = null;
 
         for (int i = 0; i < buffers; i++) {
             File file = new File(getFileName(uuid, i));
@@ -67,7 +67,7 @@ public class BufferedFolderStorageHandler extends StorageHandler {
             try {
                 jsonObject = JsonUtil.createOrLoadJsonFromFile(file).getJsonObject();
                 break;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 lastException = e;
             }
         }
