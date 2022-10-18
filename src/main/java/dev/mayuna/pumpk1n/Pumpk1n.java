@@ -209,9 +209,11 @@ public class Pumpk1n {
         List<DataHolder> oldDataHolders = new ArrayList<>(this.dataHolderList);
         this.dataHolderList.clear();
 
-        if (!(oldStorageHandler instanceof Migratable fromMigratable)) {
+        if (!(oldStorageHandler instanceof Migratable)) {
             throw new RuntimeException("Current storage handler " + oldStorageHandler.getClass().getName() + " does not support migrating.");
         }
+
+        Migratable fromMigratable = (Migratable) oldStorageHandler;
 
         String storageHandlerNameTo = this.storageHandler.getName();
         String storageHandlerNameFrom = oldStorageHandler.getName();

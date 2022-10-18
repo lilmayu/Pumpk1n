@@ -11,10 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,12 +25,11 @@ public class Pumpk1nTests {
     public static List<Pumpk1n> pumpk1ns = new LinkedList<>();
 
     private static List<StorageHandler> getStorageHandlers() {
-        return List.of(
-                new FolderStorageHandler(FOLDER_STORAGE_PATH),
-                new BufferedFolderStorageHandler(BUFFERED_FOLDER_STORAGE_PATH, 10),
-                new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
-                                                                              .setCustomJDBCUrl("jdbc:sqlite:" + SQLITE_STORAGE_PATH)
-                                                                              .build())
+        return Arrays.asList(new FolderStorageHandler(FOLDER_STORAGE_PATH),
+                             new BufferedFolderStorageHandler(BUFFERED_FOLDER_STORAGE_PATH, 10),
+                             new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
+                                                                                           .setCustomJDBCUrl("jdbc:sqlite:" + SQLITE_STORAGE_PATH)
+                                                                                           .build())
         );
     }
 
