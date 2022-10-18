@@ -1,18 +1,21 @@
 package dev.mayuna.pumpk1n.impl;
 
 import com.google.gson.JsonParser;
+import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
 import lombok.NonNull;
 
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * SQLite based storage
  */
-public class SQLiteStorageHandler extends StorageHandler {
+public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
     private static final Object mutex = new Object();
     private final @Getter Settings settings;
@@ -158,6 +161,28 @@ public class SQLiteStorageHandler extends StorageHandler {
                 }
             } catch (SQLException exception) {
                 throw new RuntimeException("Exception occurred while deleting DataHolder with UUID " + uuid + " from SQLite database!", exception);
+            }
+        }
+    }
+
+    @Override
+    public List<UUID> getAllHolderUUIDs() {
+        synchronized (mutex) {
+            try (Connection connection = connectToDatabase()) {
+                String sql = "SELECT uuid FROM " + settings.tableName;
+
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    ResultSet resultSet = statement.executeQuery();
+                    List<UUID> uuids = new LinkedList<>();
+
+                    while (resultSet.next()) {
+                        uuids.add(UUID.fromString(resultSet.getString("uuid")));
+                    }
+
+                    return uuids;
+                }
+            }  catch (SQLException exception) {
+                throw new RuntimeException("Exception occurred while listing all DataHolders from SQLite database!", exception);
             }
         }
     }

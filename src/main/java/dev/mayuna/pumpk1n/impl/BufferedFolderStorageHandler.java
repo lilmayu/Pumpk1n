@@ -2,6 +2,7 @@ package dev.mayuna.pumpk1n.impl;
 
 import com.google.gson.JsonObject;
 import dev.mayuna.mayusjsonutils.JsonUtil;
+import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
@@ -9,9 +10,12 @@ import lombok.NonNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
-public class BufferedFolderStorageHandler extends StorageHandler {
+public class BufferedFolderStorageHandler extends StorageHandler implements Migratable {
 
     private final @Getter String folderPath;
     private final @Getter int buffers;
@@ -107,5 +111,40 @@ public class BufferedFolderStorageHandler extends StorageHandler {
         }
 
         return path + ".json";
+    }
+
+    @Override
+    public List<UUID> getAllHolderUUIDs() {
+        File folder = new File(folderPath);
+
+        if (!folder.exists()) {
+            return new ArrayList<>(0);
+        }
+
+        File files[] = folder.listFiles();
+
+        if (files == null) {
+            return new ArrayList<>(0);
+        }
+
+        List<UUID> uuids = new LinkedList<>();
+
+        for (File file : files) {
+            UUID uuid = null;
+
+            try {
+                String fileName = file.getName();
+                uuid = UUID.fromString(fileName.replaceFirst("(_\\d*.json)$", ""));
+            } catch (IllegalArgumentException ignored) {
+            }
+
+            if (uuid != null) {
+                if (!uuids.contains(uuid)) {
+                    uuids.add(uuid);
+                }
+            }
+        }
+
+        return uuids;
     }
 }

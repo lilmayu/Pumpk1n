@@ -3,6 +3,7 @@ package dev.mayuna.pumpk1n.impl;
 import com.google.gson.JsonParser;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
@@ -12,12 +13,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * SQL based storage
  */
-public class SQLStorageHandler extends StorageHandler {
+public class SQLStorageHandler extends StorageHandler implements Migratable {
 
     private final @Getter PoolManager poolManager;
     private final @Getter String tableName;
@@ -152,6 +155,31 @@ public class SQLStorageHandler extends StorageHandler {
             throw new RuntimeException("Exception occurred while deleting DataHolder with UUID " + uuid + " from SQL database!", exception);
         } finally {
             poolManager.closeAll(connection, statement, null);
+        }
+    }
+
+    @Override
+    public List<UUID> getAllHolderUUIDs() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = poolManager.getConnection();
+            statement = connection.prepareStatement("SELECT uuid FROM " + tableName);
+            resultSet = statement.executeQuery();
+
+            List<UUID> uuids = new LinkedList<>();
+
+            while (resultSet.next()) {
+                uuids.add(UUID.fromString(resultSet.getString("uuid")));
+            }
+
+            return uuids;
+        } catch (Exception exception) {
+            throw new RuntimeException("Exception occurred while listing all DataHolders from SQL database!", exception);
+        } finally {
+            poolManager.closeAll(connection, statement, resultSet);
         }
     }
 
