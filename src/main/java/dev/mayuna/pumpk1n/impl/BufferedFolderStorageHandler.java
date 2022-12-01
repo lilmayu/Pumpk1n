@@ -70,7 +70,7 @@ public class BufferedFolderStorageHandler extends StorageHandler implements Migr
 
             try {
                 jsonObject = JsonUtil.createOrLoadJsonFromFile(file).getJsonObject();
-                break;
+                return DataHolder.loadFromJsonObject(getPumpk1n(), jsonObject);
             } catch (Exception e) {
                 lastException = e;
             }
