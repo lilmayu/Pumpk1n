@@ -8,7 +8,7 @@ plugins {
 }
 
 group 'dev.mayuna'
-version '2.1.1-hotfix2'
+version '2.2'
 
 repositories {
     mavenCentral()
