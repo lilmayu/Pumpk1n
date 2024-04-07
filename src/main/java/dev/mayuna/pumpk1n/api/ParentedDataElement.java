@@ -9,7 +9,7 @@ import lombok.NonNull;
  */
 public abstract class ParentedDataElement implements DataElement {
 
-    private transient @Getter DataHolder dataHolderParent;
+    protected transient @Getter DataHolder dataHolderParent;
 
     /**
      * Sets specified {@link DataHolder} as a DataElement's parent.<br>This method is used by {@link DataHolder}. <strong>You should not use this

@@ -13,9 +13,15 @@ import org.slf4j.spi.LoggingEventBuilder;
  */
 public class SLF4JPumpk1nLogger extends BaseLogger {
 
-    private @Getter @Setter Logger logger;
-    private @Getter @Setter Level level;
+    protected @Getter @Setter Logger logger;
+    protected @Getter @Setter Level level;
 
+    /**
+     * Creates a new {@link SLF4JPumpk1nLogger} with the given logger and level
+     *
+     * @param logger The logger to use
+     * @param level  The level to use
+     */
     public SLF4JPumpk1nLogger(Logger logger, Level level) {
         this.logger = logger;
         this.level = level;

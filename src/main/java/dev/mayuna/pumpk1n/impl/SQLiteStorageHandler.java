@@ -17,8 +17,8 @@ import java.util.UUID;
  */
 public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
-    private static final Object mutex = new Object();
-    private final @Getter Settings settings;
+    protected static final Object mutex = new Object();
+    protected final @Getter Settings settings;
 
     /**
      * Creates SQLite Storage Handler with default settings
@@ -31,7 +31,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
     /**
      * Creates SQLite Storage Handler with specified {@link Settings}
      */
-    public SQLiteStorageHandler(Settings settings) {
+    public SQLiteStorageHandler(@NonNull Settings settings) {
         super(SQLiteStorageHandler.class.getSimpleName());
         this.settings = settings;
     }
@@ -53,7 +53,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
      * {@inheritDoc}
      */
     @Override
-    public void saveHolder(DataHolder dataHolder) {
+    public void saveHolder(@NonNull DataHolder dataHolder) {
         insertOrReplace(dataHolder);
     }
 
@@ -61,7 +61,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
      * {@inheritDoc}
      */
     @Override
-    public DataHolder loadHolder(UUID uuid) {
+    public DataHolder loadHolder(@NonNull UUID uuid) {
         return loadByUUID(uuid);
     }
 
@@ -69,7 +69,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
      * {@inheritDoc}
      */
     @Override
-    public boolean removeHolder(UUID uuid) {
+    public boolean removeHolder(@NonNull UUID uuid) {
         return delete(uuid);
     }
 
@@ -77,7 +77,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
     // SQLite methods //
     ////////////////////
 
-    private Connection connectToDatabase() {
+    protected Connection connectToDatabase() {
         synchronized (mutex) {
             try {
                 String jdbcUrl = settings.customJDBCUrl;
@@ -93,7 +93,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private void createDatabase() {
+    protected void createDatabase() {
         synchronized (mutex) {
             try (Connection connection = connectToDatabase()) {
                 try (Statement statement = connection.createStatement()) {
@@ -110,7 +110,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private void insertOrReplace(@NonNull DataHolder dataHolder) {
+    protected void insertOrReplace(@NonNull DataHolder dataHolder) {
         synchronized (mutex) {
             try (Connection connection = connectToDatabase()) {
                 String sql = "REPLACE INTO " + settings.tableName + " (uuid, data) VALUES (?, ?);";
@@ -127,7 +127,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private DataHolder loadByUUID(UUID uuid) {
+    protected DataHolder loadByUUID(@NonNull UUID uuid) {
         synchronized (mutex) {
             try (Connection connection = connectToDatabase()) {
                 String sql = "SELECT data FROM " + settings.tableName + " WHERE uuid = ?;";
@@ -149,7 +149,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
         return null;
     }
 
-    private boolean delete(@NonNull UUID uuid) {
+    protected boolean delete(@NonNull UUID uuid) {
         synchronized (mutex) {
             try (Connection connection = connectToDatabase()) {
                 String sql = "DELETE FROM " + settings.tableName + " WHERE uuid = ?;";
@@ -189,9 +189,9 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
     public static class Settings {
 
-        private final @Getter String customJDBCUrl;
-        private final @Getter String fileName;
-        private final @Getter String tableName;
+        protected final @Getter String customJDBCUrl;
+        protected final @Getter String fileName;
+        protected final @Getter String tableName;
 
         /**
          * Creates {@link Settings} object. It's recommended that you use {@link Builder} to create it.
@@ -218,9 +218,9 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
         public static class Builder {
 
-            private @Getter String fileName = "pumpkin_database.db";
-            private @Getter String tableName = "pumpkin";
-            private @Getter String customJDBCUrl = null;
+            protected @Getter String fileName = "pumpkin_database.db";
+            protected @Getter String tableName = "pumpkin";
+            protected @Getter String customJDBCUrl = null;
 
             /**
              * Creates empty {@link Builder} with default values
@@ -287,7 +287,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
              *
              * @return {@link Builder}, useful for chaining
              */
-            public @NonNull Builder setCustomJDBCUrl(String customJDBCUrl) {
+            public @NonNull Builder setCustomJDBCUrl(@NonNull String customJDBCUrl) {
                 this.customJDBCUrl = customJDBCUrl;
                 return this;
             }

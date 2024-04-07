@@ -15,13 +15,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A storage handler that saves data holders to a folder with multiple buffers (folders). Useful when your program can exit while writing data (e.g., power-loss).
+ */
 public class BufferedFolderStorageHandler extends StorageHandler implements Migratable {
 
-    private final @Getter String folderPath;
-    private final @Getter int buffers;
-    private File folder;
+    protected final @Getter String folderPath;
+    protected final @Getter int buffers;
+    protected File folder;
 
-    public BufferedFolderStorageHandler(String folderPath, int buffers) {
+    public BufferedFolderStorageHandler(@NonNull String folderPath, int buffers) {
         super(BufferedFolderStorageHandler.class.getSimpleName());
 
         if (!folderPath.endsWith("/")) {
@@ -103,7 +106,7 @@ public class BufferedFolderStorageHandler extends StorageHandler implements Migr
         return success;
     }
 
-    private String getFileName(UUID uuid, int iteration) {
+    protected String getFileName(UUID uuid, int iteration) {
         String path = folderPath + uuid.toString();
 
         if (iteration != 0) {

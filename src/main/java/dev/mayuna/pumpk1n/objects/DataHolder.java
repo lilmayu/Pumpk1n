@@ -14,11 +14,11 @@ import java.util.*;
 
 public class DataHolder {
 
-    private final @Getter UUID uuid;
-    private final @Getter Pumpk1n pumpk1n;
+    protected final @Getter UUID uuid;
+    protected final @Getter Pumpk1n pumpk1n;
 
-    private final Map<Class<?>, DataElement> dataElementMap = Collections.synchronizedMap(new HashMap<>());
-    private final Map<String, JsonObject> safeDataElementMap = Collections.synchronizedMap(new HashMap<>());
+    protected final Map<Class<?>, DataElement> dataElementMap = Collections.synchronizedMap(new HashMap<>());
+    protected final Map<String, JsonObject> safeDataElementMap = Collections.synchronizedMap(new HashMap<>());
 
     public DataHolder(Pumpk1n pumpk1n, UUID uuid) {
         this.pumpk1n = pumpk1n;
@@ -39,7 +39,7 @@ public class DataHolder {
                                 .fromJson(jsonObject, DataHolder.class);
     }
 
-    private static void setDataHolderParent(DataHolder dataHolder, DataElement dataElement) {
+    protected static void setDataHolderParent(DataHolder dataHolder, DataElement dataElement) {
         if (dataElement instanceof ParentedDataElement) {
             ((ParentedDataElement) dataElement).setDataHolderParent(dataHolder);
         }
@@ -228,7 +228,7 @@ public class DataHolder {
         pumpk1n.saveDataHolder(this);
     }
 
-    private Map<String, JsonObject> getAllDataIntoSafeMap() {
+    protected Map<String, JsonObject> getAllDataIntoSafeMap() {
         Map<String, JsonObject> safeDataMap = new HashMap<>();
 
         dataElementMap.forEach((clazz, dataElement) -> {
@@ -244,7 +244,7 @@ public class DataHolder {
         return safeDataMap;
     }
 
-    private <T extends DataElement> T createInstance(Class<T> clazz, JsonObject jsonData) {
+    protected <T extends DataElement> T createInstance(Class<T> clazz, JsonObject jsonData) {
         GsonBuilder gsonBuilder;
 
         try {
@@ -261,11 +261,11 @@ public class DataHolder {
         return dataElement;
     }
 
-    private static class DataHolderTypeAdapter implements JsonSerializer<DataHolder>, JsonDeserializer<DataHolder> {
+    protected static class DataHolderTypeAdapter implements JsonSerializer<DataHolder>, JsonDeserializer<DataHolder> {
 
-        private final @Getter Pumpk1n pumpk1n;
+        protected final @Getter Pumpk1n pumpk1n;
 
-        private DataHolderTypeAdapter(Pumpk1n pumpk1n) {
+        protected DataHolderTypeAdapter(Pumpk1n pumpk1n) {
             this.pumpk1n = pumpk1n;
         }
 

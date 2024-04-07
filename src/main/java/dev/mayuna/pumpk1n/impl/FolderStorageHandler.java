@@ -6,6 +6,7 @@ import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,10 +20,10 @@ import java.util.UUID;
  */
 public class FolderStorageHandler extends StorageHandler implements Migratable {
 
-    private final @Getter String folderPath;
-    private File folder;
+    protected final @Getter String folderPath;
+    protected File folder;
 
-    public FolderStorageHandler(String folderPath) {
+    public FolderStorageHandler(@NonNull String folderPath) {
         super(FolderStorageHandler.class.getSimpleName());
 
         if (!folderPath.endsWith("/")) {
@@ -44,7 +45,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
     }
 
     @Override
-    public void saveHolder(DataHolder dataHolder) {
+    public void saveHolder(@NonNull DataHolder dataHolder) {
         File file = new File(getFileName(dataHolder.getUuid()));
 
         try {
@@ -55,7 +56,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
     }
 
     @Override
-    public DataHolder loadHolder(UUID uuid) {
+    public DataHolder loadHolder(@NonNull UUID uuid) {
         File file = new File(getFileName(uuid));
 
         if (!file.exists()) {
@@ -71,7 +72,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
     }
 
     @Override
-    public boolean removeHolder(UUID uuid) {
+    public boolean removeHolder(@NonNull UUID uuid) {
         File file = new File(getFileName(uuid));
 
         if (!file.exists()) {
@@ -81,7 +82,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
         return file.delete();
     }
 
-    private String getFileName(UUID uuid) {
+    protected String getFileName(@NonNull UUID uuid) {
         return folderPath + uuid.toString() + ".json";
     }
 

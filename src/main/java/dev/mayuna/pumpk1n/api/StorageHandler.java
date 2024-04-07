@@ -8,10 +8,14 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * Base class for storage handlers
+ */
+@Getter
 public abstract class StorageHandler {
 
-    private final @Getter String name;
-    private @Getter @Setter Pumpk1n pumpk1n;
+    protected final String name;
+    protected @Setter Pumpk1n pumpk1n;
 
     /**
      * Creates StorageHandler with name

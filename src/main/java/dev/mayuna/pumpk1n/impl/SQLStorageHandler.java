@@ -22,10 +22,10 @@ import java.util.UUID;
  */
 public class SQLStorageHandler extends StorageHandler implements Migratable {
 
-    private final @Getter PoolManager poolManager;
-    private final @Getter String tableName;
+    protected final @Getter PoolManager poolManager;
+    protected final @Getter String tableName;
 
-    public SQLStorageHandler(HikariConfig hikariConfig, String tableName) {
+    public SQLStorageHandler(@NonNull HikariConfig hikariConfig, @NonNull String tableName) {
         super(SQLStorageHandler.class.getSimpleName());
         this.poolManager = new PoolManager(hikariConfig);
         this.tableName = tableName;
@@ -78,7 +78,7 @@ public class SQLStorageHandler extends StorageHandler implements Migratable {
     // SQL Methods //
     /////////////////
 
-    private void createDatabase() {
+    protected void createDatabase() {
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -99,7 +99,7 @@ public class SQLStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private void insertOrReplace(@NonNull DataHolder dataHolder) {
+    protected void insertOrReplace(@NonNull DataHolder dataHolder) {
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -116,7 +116,7 @@ public class SQLStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private DataHolder loadByUUID(UUID uuid) {
+    protected DataHolder loadByUUID(@NonNull UUID uuid) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -141,7 +141,7 @@ public class SQLStorageHandler extends StorageHandler implements Migratable {
         }
     }
 
-    private boolean delete(@NonNull UUID uuid) {
+    protected boolean delete(@NonNull UUID uuid) {
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -185,9 +185,9 @@ public class SQLStorageHandler extends StorageHandler implements Migratable {
 
     public static class PoolManager {
 
-        private final @Getter HikariDataSource dataSource;
+        protected final @Getter HikariDataSource dataSource;
 
-        public PoolManager(HikariConfig config) {
+        public PoolManager(@NonNull HikariConfig config) {
             this.dataSource = new HikariDataSource(config);
         }
 

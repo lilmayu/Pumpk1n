@@ -6,13 +6,35 @@ import lombok.NonNull;
 
 import java.util.UUID;
 
+/**
+ * Base class for logging
+ */
 @Data
 public abstract class BaseLogger {
 
+    /**
+     * Whether to log miscellaneous messages
+     */
     protected boolean logMisc = true;
+
+    /**
+     * Whether to log loading messages
+     */
     protected boolean logLoad = false;
+
+    /**
+     * Whether to log read messages
+     */
     protected boolean logRead = false;
+
+    /**
+     * Whether to log write messages
+     */
     protected boolean logWrite = false;
+
+    /**
+     * Whether to log create messages
+     */
     protected boolean logCreate = false;
 
     /**

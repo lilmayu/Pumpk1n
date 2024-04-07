@@ -15,9 +15,9 @@ import java.util.*;
 
 public class Pumpk1n {
 
-    private final List<DataHolder> dataHolderList = Collections.synchronizedList(new LinkedList<>());
-    private @Getter StorageHandler storageHandler;
-    private @Getter BaseLogger logger = new SLF4JPumpk1nLogger(null, null);
+    protected final List<DataHolder> dataHolderList = Collections.synchronizedList(new LinkedList<>());
+    protected @Getter StorageHandler storageHandler;
+    protected @Getter BaseLogger logger = new SLF4JPumpk1nLogger(null, null);
 
     /**
      * Creates a new {@link Pumpk1n} with the given {@link StorageHandler}

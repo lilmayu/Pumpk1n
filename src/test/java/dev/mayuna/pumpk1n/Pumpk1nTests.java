@@ -25,7 +25,7 @@ public class Pumpk1nTests {
 
     public static List<Pumpk1n> pumpk1ns = new LinkedList<>();
 
-    private static List<StorageHandler> getStorageHandlers() {
+    protected static List<StorageHandler> getStorageHandlers() {
         return Arrays.asList(new FolderStorageHandler(FOLDER_STORAGE_PATH),
                              new BufferedFolderStorageHandler(BUFFERED_FOLDER_STORAGE_PATH, 10),
                              new SQLiteStorageHandler(SQLiteStorageHandler.Settings.Builder.create()
@@ -34,7 +34,7 @@ public class Pumpk1nTests {
         );
     }
 
-    private static void deleteAllIn(String path) {
+    protected static void deleteAllIn(String path) {
         File folder = new File(path);
 
         if (!folder.exists()) {
