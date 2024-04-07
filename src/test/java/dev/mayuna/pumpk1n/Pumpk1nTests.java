@@ -6,6 +6,7 @@ import dev.mayuna.pumpk1n.impl.BufferedFolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.FolderStorageHandler;
 import dev.mayuna.pumpk1n.impl.SQLiteStorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
+import dev.mayuna.pumpk1n.util.BaseLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,21 @@ public class Pumpk1nTests {
         getStorageHandlers().forEach(storageHandler -> {
             Pumpk1n pumpk1n = new Pumpk1n(storageHandler);
             pumpk1n.prepareStorage();
+            pumpk1n.setLogger(new BaseLogger() {
+                @Override
+                public void log(String message, Throwable throwable) {
+                    if (throwable != null) {
+                        throwable.printStackTrace();
+                    }
+
+                    System.out.println(message);
+                }
+            });
+            pumpk1n.getLogger().setLogCreate(true);
+            pumpk1n.getLogger().setLogMisc(true);
+            pumpk1n.getLogger().setLogLoad(true);
+            pumpk1n.getLogger().setLogRead(true);
+            pumpk1n.getLogger().setLogWrite(true);
             pumpk1ns.add(pumpk1n);
         });
     }

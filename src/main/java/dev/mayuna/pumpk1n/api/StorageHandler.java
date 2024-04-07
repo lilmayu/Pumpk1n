@@ -15,6 +15,7 @@ public abstract class StorageHandler {
 
     /**
      * Creates StorageHandler with name
+     *
      * @param name Non-null string
      */
     public StorageHandler(@NonNull String name) {
@@ -28,21 +29,26 @@ public abstract class StorageHandler {
 
     /**
      * Saves specified {@link DataHolder} into storage
+     *
      * @param dataHolder Non-null {@link DataHolder}
      */
     public abstract void saveHolder(@NonNull DataHolder dataHolder);
 
     /**
      * Loads specified {@link DataHolder} by its {@link UUID} from database
+     *
      * @param uuid Non-null UUID
+     *
      * @return Nullable {@link DataHolder}
      */
     public abstract DataHolder loadHolder(@NonNull UUID uuid);
 
     /**
      * Removes specified {@link DataHolder} by its {@link UUID} from database
+     *
      * @param uuid Non-null UUID
-     * @return Nullable {@link DataHolder}
+     *
+     * @return True if holder was removed, false otherwise
      */
     public abstract boolean removeHolder(@NonNull UUID uuid);
 }

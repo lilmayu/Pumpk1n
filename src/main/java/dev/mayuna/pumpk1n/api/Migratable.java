@@ -1,5 +1,7 @@
 package dev.mayuna.pumpk1n.api;
 
+import lombok.NonNull;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -8,6 +10,11 @@ import java.util.UUID;
  */
 public interface Migratable {
 
-    List<UUID> getAllHolderUUIDs();
+    /**
+     * Returns all UUIDs of holders in the storage
+     *
+     * @return Non-null list of UUIDs
+     */
+    @NonNull List<UUID> getAllHolderUUIDs();
 
 }

@@ -4,57 +4,65 @@ import dev.mayuna.pumpk1n.api.DataElement;
 import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
-import dev.mayuna.pumpk1n.util.Pumpk1nLogging;
+import dev.mayuna.pumpk1n.util.BaseLogger;
+import dev.mayuna.pumpk1n.util.SLF4JPumpk1nLogger;
 import lombok.Getter;
 import lombok.NonNull;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Pumpk1n {
 
     private final List<DataHolder> dataHolderList = Collections.synchronizedList(new LinkedList<>());
-    private @Getter StorageHandler storageHandler; // not final tho
-    private @Getter Pumpk1nLogging logging = new Pumpk1nLogging(null, -1);
+    private @Getter StorageHandler storageHandler;
+    private @Getter BaseLogger logger = new SLF4JPumpk1nLogger(null, null);
 
+    /**
+     * Creates a new {@link Pumpk1n} with the given {@link StorageHandler}
+     *
+     * @param storageHandler The {@link StorageHandler} to use
+     */
     public Pumpk1n(StorageHandler storageHandler) {
         this.storageHandler = storageHandler;
-
         this.storageHandler.setPumpk1n(this);
     }
 
     /**
-     * Enables SLF4J logging with default DEBUG level
+     * Enables SLF4J logging with default DEBUG level.<br>
+     * If different logger is desired, extend {@link BaseLogger} and set it with {@link Pumpk1n#setLogger(BaseLogger)}
      */
     public void enableLogging() {
-        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), Level.DEBUG.toInt());
+        logger = new SLF4JPumpk1nLogger(LoggerFactory.getLogger(Pumpk1n.class), Level.DEBUG);
     }
 
     /**
-     * Enables SLF4J logging with specified level
+     * Enables SLF4J logging with specified level<br>
+     * If different logger is desired, extend {@link BaseLogger} and set it with {@link Pumpk1n#setLogger(BaseLogger)}
+     *
      * @param level Non-null logging level
      */
     public void enableLogging(Level level) {
-        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), level.toInt());
+        logger = new SLF4JPumpk1nLogger(LoggerFactory.getLogger(Pumpk1n.class), level);
     }
 
     /**
-     * Enables SLF4J logging with specified level
-     * @param level Non-null logging level
+     * Sets the logger to use
+     *
+     * @param logger Non-null {@link BaseLogger}
      */
-    public void enableLogging(int level) {
-        logging = new Pumpk1nLogging(LoggerFactory.getLogger(Pumpk1n.class), level);
+    public void setLogger(@NonNull BaseLogger logger) {
+        this.logger = logger;
     }
 
     /**
      * Calls current {@link StorageHandler#prepareStorage()}
      */
     public void prepareStorage() {
-        logging.log("Preparing storage...");
+        logger.logMisc("Preparing storage...");
         storageHandler.prepareStorage();
-        logging.log("Storage has been prepared");
+        logger.logMisc("Storage has been prepared");
     }
 
     /**
@@ -71,6 +79,7 @@ public class Pumpk1n {
                     UUID dataHolderUUID = dataHolder.getUuid();
                     if (dataHolderUUID != null) {
                         if (dataHolderUUID.equals(uuid)) {
+                            logger.logRead(dataHolder);
                             return dataHolder;
                         }
                     }
@@ -95,7 +104,7 @@ public class Pumpk1n {
             dataHolder = storageHandler.loadHolder(uuid);
 
             if (dataHolder != null) {
-                logging.log("DataHolder with UUID " + uuid + " has been loaded");
+                logger.logLoad(dataHolder);
                 dataHolderList.add(dataHolder);
             }
         }
@@ -114,10 +123,9 @@ public class Pumpk1n {
         DataHolder dataHolder = getOrLoadDataHolder(uuid);
 
         if (dataHolder == null) {
-            logging.log("Creating DataHolder with UUID " + uuid + "...");
             dataHolder = new DataHolder(this, uuid);
             dataHolderList.add(dataHolder);
-            logging.log("DataHolder with UUID " + uuid + " has been created");
+            logger.logCreate(dataHolder);
         }
 
         return dataHolder;
@@ -130,6 +138,7 @@ public class Pumpk1n {
      */
     public void addToMemoryDataHolder(@NonNull DataHolder dataHolder) {
         if (getDataHolder(dataHolder.getUuid()) == null) {
+            logger.logWrite(dataHolder, "added to memory");
             dataHolderList.add(dataHolder);
         }
     }
@@ -148,6 +157,7 @@ public class Pumpk1n {
         }
 
         dataHolderList.add(dataHolder);
+        logger.logWrite(dataHolder, "added/replaced");
     }
 
     /**
@@ -158,7 +168,13 @@ public class Pumpk1n {
      * @return True if any {@link DataHolder} was unloaded
      */
     public boolean unloadDataHolder(@NonNull UUID uuid) {
-        return dataHolderList.removeIf(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid));
+        boolean removed = dataHolderList.removeIf(dataHolderFilter -> dataHolderFilter.getUuid().equals(uuid));
+
+        if (removed) {
+            logger.logWrite(uuid, "removed from memory");
+        }
+
+        return removed;
     }
 
     /**
@@ -170,7 +186,13 @@ public class Pumpk1n {
      */
     public boolean deleteDataHolder(@NonNull UUID uuid) {
         unloadDataHolder(uuid);
-        return storageHandler.removeHolder(uuid);
+        boolean removed = storageHandler.removeHolder(uuid);
+
+        if (removed) {
+            logger.logWrite(uuid, "removed from storage");
+        }
+
+        return removed;
     }
 
     /**
@@ -179,10 +201,10 @@ public class Pumpk1n {
      * @param dataHolder Non-null {@link DataHolder}
      */
     public void saveDataHolder(@NonNull DataHolder dataHolder) {
-        logging.log("Saving DataHolder with UUID " + dataHolder.getUuid() + "...");
+        logger.logBeforeSave(dataHolder);
         dataHolder.getDataElementMap().values().forEach(DataElement::beforeSave);
         storageHandler.saveHolder(dataHolder);
-        logging.log("DataHolder with UUID " + dataHolder.getUuid() + " has been saved");
+        logger.logWrite(dataHolder, "saved");
     }
 
     /**
@@ -195,7 +217,9 @@ public class Pumpk1n {
     }
 
     /**
-     * Migrates all loaded and unloaded data holders this storage handler has. Current storage handler must implement {@link Migratable} interface, otherwise {@link RuntimeException} is thrown
+     * Migrates all loaded and unloaded data holders this storage handler has. Current storage handler must implement {@link Migratable} interface,
+     * otherwise {@link RuntimeException} is thrown
+     *
      * @param storageHandler Non-null {@link StorageHandler} object to migrate to. Must as well implement {@link Migratable} interface
      */
     public void migrateTo(@NonNull StorageHandler storageHandler) {
@@ -218,16 +242,16 @@ public class Pumpk1n {
         String storageHandlerNameTo = this.storageHandler.getName();
         String storageHandlerNameFrom = oldStorageHandler.getName();
 
-        logging.log("Preparing migration from " + storageHandlerNameFrom + " to " + storageHandlerNameTo);
+        logger.logMisc("Preparing migration from " + storageHandlerNameFrom + " to " + storageHandlerNameTo);
 
         this.storageHandler.prepareStorage();
         oldStorageHandler.prepareStorage();
 
-        logging.log("Getting all DataHolder UUIDs from storage handler " + storageHandlerNameFrom);
+        logger.logMisc("Getting all DataHolder UUIDs from storage handler " + storageHandlerNameFrom);
 
         List<UUID> uuids = fromMigratable.getAllHolderUUIDs();
 
-        logging.log("Transferring all data holders from " + storageHandlerNameFrom + " to " + storageHandlerNameTo + "...");
+        logger.logMisc("Migrating all data holders from " + storageHandlerNameFrom + " to " + storageHandlerNameTo + "...");
 
         long start = System.currentTimeMillis();
 
@@ -241,7 +265,7 @@ public class Pumpk1n {
 
                 this.saveDataHolder(dataHolder);
             } catch (Exception exception) {
-                logging.log("Exception occurred while transferring data holder " + uuid + "!", exception);
+                logger.logMisc("Exception occurred while migrating data holder " + uuid + "!", exception);
             }
         });
 
@@ -249,10 +273,10 @@ public class Pumpk1n {
             try {
                 this.saveDataHolder(dataHolder);
             } catch (Exception exception) {
-                logging.log("Exception occurred while transferring data holder " + dataHolder.getUuid() + "!", exception);
+                logger.logMisc("Exception occurred while migrating data holder " + dataHolder.getUuid() + "!", exception);
             }
         });
 
-        logging.log("Transferring done in " + (System.currentTimeMillis() - start) + " ms");
+        logger.logMisc("Migrating done in " + (System.currentTimeMillis() - start) + " ms");
     }
 }
