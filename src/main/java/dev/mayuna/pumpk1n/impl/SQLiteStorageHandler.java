@@ -30,6 +30,8 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
     /**
      * Creates SQLite Storage Handler with specified {@link Settings}
+     *
+     * @param settings Non-null {@link Settings}
      */
     public SQLiteStorageHandler(@NonNull Settings settings) {
         super(SQLiteStorageHandler.class.getSimpleName());
@@ -181,7 +183,7 @@ public class SQLiteStorageHandler extends StorageHandler implements Migratable {
 
                     return uuids;
                 }
-            }  catch (SQLException exception) {
+            } catch (SQLException exception) {
                 throw new RuntimeException("Exception occurred while listing all DataHolders from SQLite database!", exception);
             }
         }

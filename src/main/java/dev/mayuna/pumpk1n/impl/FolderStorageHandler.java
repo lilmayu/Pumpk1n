@@ -1,7 +1,7 @@
 package dev.mayuna.pumpk1n.impl;
 
 import com.google.gson.JsonObject;
-import dev.mayuna.mayusjsonutils.JsonUtil;
+import dev.mayuna.mayusjsonutils.MayuJson;
 import dev.mayuna.pumpk1n.api.Migratable;
 import dev.mayuna.pumpk1n.api.StorageHandler;
 import dev.mayuna.pumpk1n.objects.DataHolder;
@@ -49,7 +49,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
         File file = new File(getFileName(dataHolder.getUuid()));
 
         try {
-            JsonUtil.saveJson(dataHolder.getAsJsonObject(), file);
+            new MayuJson(file.toPath(), dataHolder.getAsJsonObject()).save();
         } catch (IOException e) {
             throw new RuntimeException("Could not save Data Holder with UUID " + dataHolder.getUuid() + "!", e);
         }
@@ -64,7 +64,7 @@ public class FolderStorageHandler extends StorageHandler implements Migratable {
         }
 
         try {
-            JsonObject jsonObject = JsonUtil.createOrLoadJsonFromFile(file).getJsonObject();
+            JsonObject jsonObject = MayuJson.createOrLoadJsonObject(file.toPath()).getJsonObject();
             return DataHolder.loadFromJsonObject(getPumpk1n(), jsonObject);
         } catch (IOException e) {
             throw new RuntimeException("Could not load Data Holder with UUID " + uuid + "!", e);

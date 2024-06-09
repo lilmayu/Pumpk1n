@@ -1,33 +1,24 @@
-<h1 align="center">Pumpk1n</h1>
-<p align="center">
-    <img src="http://ForTheBadge.com/images/badges/made-with-java.svg" alt="Made with Java"><br>
-    <img src="https://forthebadge.com/images/badges/powered-by-water.svg" alt="Powered by Water"><br>
-    <img src="https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg" alt="Powered by Water">
-    <br>
-    <img src="https://img.shields.io/github/license/lilmayu/Pumpk1n.svg" alt="License">
-    <img src="https://img.shields.io/github/v/release/lilmayu/Pumpk1n.svg" alt="Version">
-</p>
-<p align="center">
-    Pumpk1n - Lightweight and customizable tool for quick data management using Gson serialization.
-    <br>
-    Made by <a href="https://mayuna.dev">Mayuna</a>
-</p>
+# Pumpk1n
+
+Lightweight and customizable tool for quick data management using GSON serialization.
+
+> [!IMPORTANT]  
+> As of 2.2.1, the library is now under MIT license. All previous versions are under Apache License 2.0.
+
+## Contents
+
+- [Installation](#installation)
+    - [Gradle](#gradle)
+    - [Maven](#maven)
+- [Documentation](#documentation)
+- [Why?](#why)
 
 ## Installation
-### Maven
-```xml
-<dependency>
-    <groupId>dev.mayuna</groupId>
-    <artifactId>pumpk1n</artifactId>
-    <version>VERSION</version>
-</dependency>
-<dependency>
-    <groupId>dev.mayuna</groupId>
-    <artifactId>mayus-json-utilities</artifactId>
-    <version>1.3.1</version>
-</dependency>
-<!-- + GSON and possibly MySQL with HikaryCP or SQLite -->
-```
+- Java >= 8
+- [Mayu's Json Utilities](https://github.com/lilmayu/MayusJsonUtilities)
+- [GSON](https://github.com/google/gson)
+- And possibly other libraries (see Gradle installation)
+
 ### Gradle
 ```gradle
 repositories {
@@ -36,32 +27,40 @@ repositories {
 
 dependencies {
     // Change 'implementation' to 'compile' on old Gradle versions
-    implementation 'dev.mayuna:pumpk1n:VERSION'
+    implementation 'dev.mayuna:pumpk1n:2.2.1'
     
     // Mayu's Json Utilities
-    implementation 'dev.mayuna:mayus-json-utilities:1.3.1'
+    implementation 'dev.mayuna:mayus-json-utilities:2.0'
 
     // You will also need...
-    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.google.code.gson:gson:2.11.0'
 
-    /// And if you will be using SQLite / SQL default Storage Handler implementation...
-    // SQLite
-    compileOnly 'org.xerial:sqlite-jdbc:3.36.0.3'
+    // And if you will be using SQLite / SQL default Storage Handler implementation...
+    /// SQLite
+    implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
 
-    // MySQL
-    compileOnly 'mysql:mysql-connector-java:8.0.29'
-    compileOnly 'com.zaxxer:HikariCP:3.4.5' // HikariCP - Pro TIP: You should use newer version!
+    /// MySQL + HikariCP
+    implementation 'com.mysql:mysql-connector-j:8.4.0'
+    implementation 'com.zaxxer:HikariCP:3.4.5'
 }
 ```
-- Replace `VERSION` with version number without `v` character
-- For version number see latest [Maven Repository](https://mvnrepository.com/artifact/dev.mayuna/pumpk1n) release (should be same with Github Release though)
-- You can also use [GitHub Releases](https://github.com/lilmayu/pumpk1n/releases)
 
-## Requirements
-- Java >= 8
-- [Mayu's Json Utilities](https://github.com/lilmayu/MayusJsonUtilities)
-- [GSON](https://github.com/google/gson) 
-- And possibly other libraries (see Gradle installation)
+### Maven
+```xml
+<dependency>
+    <groupId>dev.mayuna</groupId>
+    <artifactId>pumpk1n</artifactId>
+    <version>2.2.1</version>
+</dependency>
+<dependency>
+    <groupId>dev.mayuna</groupId>
+    <artifactId>mayus-json-utilities</artifactId>
+    <version>2.0</version>
+</dependency>
+<!-- + GSON and possibly MySQL with HikaryCP or SQLite -->
+```
+
+**You can find the latest version [here](https://mvnrepository.com/artifact/dev.mayuna/pumpk1n).**
 
 ## Documentation
 An example is worth a thousand words.
