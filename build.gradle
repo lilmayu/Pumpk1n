@@ -76,6 +76,7 @@ shadowJar {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 // == Maven publishing == //
